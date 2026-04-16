@@ -2,6 +2,7 @@
 .env
 *.local
 backend/.env
+frontend/my-react-app/.env
 
 # --- Python / Backend ---
 # This ignores any 'venv' folder in the project

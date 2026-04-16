@@ -2,10 +2,17 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import bcrypt
+import os # To load your Client ID if using environment variables
+from google.oauth2 import id_token
+from google.auth.transport import requests
+from dotenv import load_dotenv
+load_dotenv() # This loads your .env file into os.environ
+
 
 from database import supabase
 
 app = FastAPI()
+YOUR_GOOGLE_CLIENT_ID=os.getenv("GOOGLE_CLIENT_ID")
 
 # ---------------------------
 # CORS (React connection)
@@ -35,6 +42,64 @@ class LoginUser(BaseModel):
     email: str
     password: str
 
+
+class GoogleToken(BaseModel):
+    token: str
+
+
+@app.post("/auth/google")
+async def google_auth(data: GoogleToken):
+    try:
+        # Debugging prints (minimal changes)
+        print(f"DEBUG: Using Client ID: {YOUR_GOOGLE_CLIENT_ID}")
+        
+        # 1. Verify the token with Google
+        id_info = id_token.verify_oauth2_token(
+            data.token, 
+            requests.Request(), 
+            YOUR_GOOGLE_CLIENT_ID,
+            clock_skew_in_seconds=10  # Allows for small time differences
+        )
+
+        email = id_info.get("email")
+        name = id_info.get("name")
+        google_id = id_info.get("sub")
+        print(f"DEBUG: Authenticated {email}")
+
+        # 2. Check if user exists in Supabase
+        response = supabase.table("users") \
+            .select("*") \
+            .eq("email", email) \
+            .execute()
+
+        if not response.data:
+            # 3. Create a new user if they don't exist
+            # Note: We leave 'password' empty or set a placeholder for Google users
+            new_user = supabase.table("users").insert({
+                "name": name,
+                "email": email,
+                "password": "GOOGLE_AUTH_USER", 
+                "phonenumber": "" # Or get this from Google if scopes allow
+            }).execute()
+            db_user = new_user.data[0]
+        else:
+            db_user = response.data[0]
+
+        return {
+            "message": "Google Login successful",
+            "user": {
+                "id": db_user["id"],
+                "name": db_user["name"],
+                "email": db_user["email"]
+            }
+        }
+
+    except ValueError as e:
+        print(f"DEBUG: Google Auth ValueError: {str(e)}")
+        raise HTTPException(status_code=401, detail=f"Invalid Google token: {str(e)}")
+    except Exception as e:
+        print(f"DEBUG: Google Auth Generic Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # ---------------------------
 # SIGNUP
