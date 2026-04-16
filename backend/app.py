@@ -12,7 +12,7 @@ load_dotenv() # This loads your .env file into os.environ
 from database import supabase
 
 app = FastAPI()
-YOUR_GOOGLE_CLIENT_ID=os.getenv("GOOGLE_CLIENT_ID")
+YOUR_GOOGLE_CLIENT_ID=os.getenv("VITE_GOOGLE_CLIENT_ID")
 
 # ---------------------------
 # CORS (React connection)
