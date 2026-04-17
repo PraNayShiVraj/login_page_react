@@ -17,12 +17,15 @@ YOUR_GOOGLE_CLIENT_ID=os.getenv("VITE_GOOGLE_CLIENT_ID")
 # ---------------------------
 # CORS (React connection)
 # ---------------------------
+ALLOWED_ORIGIN = os.getenv("ALLOWED_ORIGIN", "http://localhost:5173")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",  # CRA
+        "http://localhost:3000",
         "http://localhost:5173",
-        "https://login-page-react.onrender.com"   # Vite
+        "https://login-page-react.onrender.com",
+        ALLOWED_ORIGIN
     ],
     allow_credentials=True,
     allow_methods=["*"],

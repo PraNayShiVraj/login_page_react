@@ -5,7 +5,7 @@ import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 
 // Use environment variables for flexibility
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-const apiUrl = import.meta.env.VITE_API_URL || "http://127.0.0.1:5173";
+const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const Login = () => {
     const [email, setEmail] = useState('');
