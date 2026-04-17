@@ -111,22 +111,23 @@ async def google_auth(data: GoogleToken):
 @app.post("/signup")
 def signup(user: User):
     try:
-        # Check if user exists
+        # 1. Check if user exists
         existing = supabase.table("users") \
             .select("id") \
             .eq("email", user.email) \
             .execute()
 
         if existing.data:
+            # We want this to go straight to the frontend, NOT be caught by 'except Exception'
             raise HTTPException(status_code=400, detail="Email already registered")
 
-        # Hash password
+        # 2. Hash password
         hashed_pw = bcrypt.hashpw(
             user.password.encode("utf-8"),
             bcrypt.gensalt()
         ).decode("utf-8")
 
-        # Insert user
+        # 3. Insert user
         response = supabase.table("users").insert({
             "name": user.name,
             "email": user.email,
@@ -139,9 +140,13 @@ def signup(user: User):
             "user": response.data
         }
 
+    except HTTPException as http_err:
+        # Re-raise the 400 error so FastAPI handles it correctly
+        raise http_err
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
+        # Catch genuine server crashes (database down, etc.)
+        print(f"Server Error: {e}") # Log this in Render so you can see it
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 # ---------------------------
 # LOGIN
