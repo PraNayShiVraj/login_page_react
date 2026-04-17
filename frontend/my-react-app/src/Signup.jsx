@@ -63,6 +63,7 @@ function Signup() {
         <div className="signup-container">
             <form className="signup-form" onSubmit={handleSubmit}>
                 <h2>Create Account</h2>
+                <p>Sign up to continue</p>
                 <div className="input-group">
                     <label>Full Name</label>
                     <input type="text" name="name" onChange={handleChange} required />
