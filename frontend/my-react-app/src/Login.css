@@ -22,6 +22,7 @@
     /* Wider box */
     min-height: 400px;
     max-height: 700px;
+    height: 95%;
     padding: 40px;
     box-sizing: border-box;
 }
@@ -215,4 +216,48 @@
     color: #ffffff;
     /* The accent color from your video */
     margin-top: 5px;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .login-card {
+        flex-direction: column;
+        /* Stacks the black box and the form vertically */
+        width: 95%;
+        padding: 20px;
+        /* Reduced padding to save space */
+        max-height: none;
+        /* Allows the card to grow with content */
+    }
+
+    .login-left {
+        width: 100%;
+        padding: 20px;
+        border-radius: 12px;
+        /* Smaller radius for mobile */
+        /* Optional: hide the left side on very small screens to focus on login */
+        /* display: none; */
+    }
+
+    .side-gif {
+        width: 50%;
+        /* Make the GIF smaller so the form is visible sooner */
+        max-width: 150px;
+    }
+
+    .login-content-wrapper {
+        width: 100%;
+        /* Form now takes the full width */
+        padding: 20px 10px;
+    }
+
+    .login-card h2 {
+        font-size: 1.5rem;
+        /* Slightly smaller text */
+    }
+
+    /* Prevent iOS zoom on focus by ensuring font-size is at least 16px */
+    .login-form input {
+        font-size: 16px;
+    }
 }
