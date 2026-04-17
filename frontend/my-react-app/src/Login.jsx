@@ -22,7 +22,15 @@ const Login = () => {
                 body: JSON.stringify({ email, password }),
             });
 
-            const data = await res.json();
+            const text = await res.text();
+            let data = {};
+            try {
+                data = text ? JSON.parse(text) : {};
+            } catch (jsonErr) {
+                console.error("Login non-JSON response:", text);
+                throw new Error("Invalid response from server");
+            }
+
             if (!res.ok) {
                 alert(data.detail || "Login failed");
             } else {
@@ -32,7 +40,7 @@ const Login = () => {
             }
         } catch (err) {
             console.error("Login error:", err);
-            alert("Something went wrong");
+            alert(err.message || "Something went wrong");
         }
     };
 
@@ -46,7 +54,15 @@ const Login = () => {
                 body: JSON.stringify({ token: credentialResponse.credential }),
             });
 
-            const data = await res.json();
+            const text = await res.text();
+            let data = {};
+            try {
+                data = text ? JSON.parse(text) : {};
+            } catch (jsonErr) {
+                console.error("Google Auth non-JSON response:", text);
+                throw new Error("Invalid response from server during Google Login");
+            }
+
             if (res.ok) {
                 alert("Google Login successful! 🚀");
                 localStorage.setItem("user", JSON.stringify(data.user));
@@ -56,7 +72,7 @@ const Login = () => {
             }
         } catch (err) {
             console.error("Google Auth Error:", err);
-            alert("Failed to connect to backend");
+            alert(err.message || "Failed to connect to backend");
         }
     };
 

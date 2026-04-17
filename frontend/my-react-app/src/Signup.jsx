@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Signup.css";
 
-// Ensure your .env file has VITE_API_URL=https://login-page-react.onrender.com
-const apiUrl = import.meta.env.VITE_API_URL || "https://login-page-react.onrender.com";
+// Fallback to the actual backend URL on Render if environment variable is missing
+const apiUrl = import.meta.env.VITE_API_URL || "https://login-page-react-backend.onrender.com";
 
 function Signup() {
     const navigate = useNavigate();
@@ -24,7 +24,8 @@ function Signup() {
         setLoading(true);
 
         try {
-            // Note: Use /signup/ with a trailing slash to match FastAPI/Python standards
+            // Note: Targeting the backend URL supplied by user
+            console.log("DEBUG: Posting to:", `${apiUrl}/signup`);
             const res = await fetch(`${apiUrl}/signup`, {
                 method: "POST",
                 headers: {

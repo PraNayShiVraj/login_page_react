@@ -110,6 +110,7 @@ async def google_auth(data: GoogleToken):
 # ---------------------------
 @app.post("/signup")
 def signup(user: User):
+    print(f"DEBUG: Received signup request for {user.email}")
     try:
         # 1. Check if user exists
         existing = supabase.table("users") \
