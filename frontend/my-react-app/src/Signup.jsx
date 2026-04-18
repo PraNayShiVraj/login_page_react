@@ -169,7 +169,7 @@ function Signup() {
                         {timer > 0 ? (
                             <span className="timer-text">Resend in: {timer}s</span>
                         ) : (
-                            <button className="resend-btn" onClick={handleResend}>Request New Link</button>
+                            <button className="resend-btn" onClick={handleResend}>Request New OTP</button>
                         )}
                     </div>
                     <button className="back-link" onClick={() => setStep(2)}>
