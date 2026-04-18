@@ -28,16 +28,27 @@ def send_otp_email(target_email, otp_code):
         to=[{"email": target_email}],
         sender={"name": BREVO_SENDER_NAME, "email": BREVO_SENDER_EMAIL},
         subject="Your OTP Verification Code",
-        html_content=f"""
-        <div style="font-family: 'Courier New', Courier, monospace; background-color: #0d0208; color: #00ff41; padding: 20px; border: 2px solid #00ff41;">
-            <h2 style="text-align: center; text-transform: uppercase; letter-spacing: 5px;">Verification Required</h2>
-            <p style="font-size: 1.2em;">Secure link established. Your one-time access code is:</p>
-            <div style="font-size: 3em; text-align: center; margin: 20px 0; border: 1px dashed #00ff41; padding: 10px;">
-                {otp_code}
-            </div>
-            <p>This code expires in 5 minutes. Do not share this with unauthorized personnel.</p>
+        html_content = f"""
+<div style="max-width: 600px; margin: 0 auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #333; line-height: 1.6; border: 1px solid #e1e4e8; border-radius: 8px; overflow: hidden;">
+    <div style="background-color: #0052cc; padding: 20px; text-align: center;">
+        <h2 style="color: #ffffff; margin: 0; font-weight: 600; letter-spacing: 0.5px;">Verification Required</h2>
+    </div>
+    <div style="padding: 40px 20px; text-align: center; background-color: #ffffff;">
+        <p style="font-size: 16px; color: #555; margin-bottom: 24px;">To complete your sign-in, please use the following one-time passcode. This code is valid for <strong>5 minutes</strong>.</p>
+        
+        <div style="display: inline-block; font-size: 32px; font-weight: 700; letter-spacing: 10px; color: #0052cc; background-color: #f4f5f7; padding: 15px 30px; border-radius: 4px; border: 1px solid #dfe1e6;">
+            {otp_code}
         </div>
-        """
+        
+        <p style="font-size: 14px; color: #888; margin-top: 30px;">
+            If you did not request this code, you can safely ignore this email. 
+            For security, do not share this code with anyone.
+        </p>
+    </div>
+    <div style="background-color: #f9fafb; padding: 15px; text-align: center; border-top: 1px solid #e1e4e8;">
+    </div>
+</div>
+"""
     )
 
     try:
