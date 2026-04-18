@@ -6,3 +6,4 @@ google-auth
 bcrypt
 pydantic
 python-multipart
+sib-api-v3-sdk

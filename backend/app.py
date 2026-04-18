@@ -6,6 +6,8 @@ import os # To load your Client ID if using environment variables
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from dotenv import load_dotenv
+import datetime
+from otp_service import generate_otp, send_otp_email
 load_dotenv() # This loads your .env file into os.environ
 
 
@@ -49,6 +51,17 @@ class LoginUser(BaseModel):
 
 class GoogleToken(BaseModel):
     token: str
+
+
+class VerifyOTP(BaseModel):
+    email: str
+    otp: str
+
+
+# ---------------------------
+# In-memory storage for OTPs
+# ---------------------------
+otp_storage = {}  # {email: {"otp": "123456", "data": user_data, "expires": timestamp}}
 
 
 @app.post("/auth/google")
@@ -104,6 +117,82 @@ async def google_auth(data: GoogleToken):
     except Exception as e:
         print(f"DEBUG: Google Auth Generic Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# ---------------------------
+# OTP ROUTES
+# ---------------------------
+@app.post("/send-otp")
+def send_otp(user: User):
+    try:
+        # Check if user already exists
+        existing = supabase.table("users").select("id").eq("email", user.email).execute()
+        if existing.data:
+            raise HTTPException(status_code=400, detail="Email already registered")
+
+        # Generate 6-digit OTP
+        otp_code = generate_otp()
+        
+        # Store in memory
+        expires = datetime.datetime.now() + datetime.timedelta(minutes=5)
+        otp_storage[user.email] = {
+            "otp": otp_code,
+            "data": user.dict(),
+            "expires": expires
+        }
+
+        # Send email
+        success = send_otp_email(user.email, otp_code)
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to send verification email")
+
+        return {"message": "OTP sent successfully"}
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print(f"Error in send-otp: {e}")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@app.post("/verify-otp")
+def verify_otp(data: VerifyOTP):
+    if data.email not in otp_storage:
+        raise HTTPException(status_code=400, detail="No OTP request found for this email")
+    
+    stored_data = otp_storage[data.email]
+    
+    if datetime.datetime.now() > stored_data["expires"]:
+        del otp_storage[data.email]
+        raise HTTPException(status_code=400, detail="OTP has expired")
+    
+    if stored_data["otp"] != data.otp:
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+    
+    # OTP is valid, proceed to create user
+    user_data = stored_data["data"]
+    try:
+        # Hash password
+        hashed_pw = bcrypt.hashpw(
+            user_data["password"].encode("utf-8"),
+            bcrypt.gensalt()
+        ).decode("utf-8")
+
+        # Insert user
+        response = supabase.table("users").insert({
+            "name": user_data["name"],
+            "email": user_data["email"],
+            "password": hashed_pw,
+            "phonenumber": user_data["phonenumber"]
+        }).execute()
+
+        # Clean up storage
+        del otp_storage[data.email]
+
+        return {
+            "message": "User created successfully",
+            "user": response.data
+        }
+    except Exception as e:
+        print(f"Error creating user after OTP: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create user")
 
 # ---------------------------
 # SIGNUP
